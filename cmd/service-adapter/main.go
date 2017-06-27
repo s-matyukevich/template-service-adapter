@@ -3,8 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"path"
-	"path/filepath"
 
 	"github.com/pivotal-cf/on-demand-services-sdk/serviceadapter"
 	"github.com/s-matyukevich/template-service-adapter/adapter"
@@ -14,15 +12,16 @@ import (
 
 func main() {
 	stderrLogger := log.New(os.Stderr, "[template-service-adapter] ", log.LstdFlags)
-	ex, err := os.Executable()
-	if err != nil {
-		stderrLogger.Fatal(err)
+	args := os.Args
+	if args[1] != "--config" {
+		stderrLogger.Fatal("Config argument is not provided")
 	}
-	config, err := config.ParseConfig(filepath.Join(path.Dir(ex), "../config/config.yml"))
+	config, err := config.ParseConfig(args[2])
 	if err != nil {
-		stderrLogger.Fatal("config", err)
+		stderrLogger.Fatal("Error while parsing config:", err)
 	}
 	manifestGenerator := adapter.ManifestGenerator{Config: config}
 	binder := adapter.Binder{Config: config}
-	serviceadapter.HandleCommandLineInvocation(os.Args, manifestGenerator, binder, nil)
+	args = append([]string{args[0]}, args[3:]...)
+	serviceadapter.HandleCommandLineInvocation(args, manifestGenerator, binder, nil)
 }
