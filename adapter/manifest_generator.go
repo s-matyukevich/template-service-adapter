@@ -74,7 +74,12 @@ func (m ManifestGenerator) GenerateManifest(
 		Version: serviceDeployment.Stemcell.Version,
 	}}, "")})
 	tmpl.Funcs(template.FuncMap{"getUpdateBlock": m.printYamlFunc("update", m.generateUpdateBlock(plan.Update), "  ")})
-	_, err := tmpl.Parse(m.Config.ManifestTemplates[planName])
+	var planTemplate string
+	var ok bool
+	if planTemplate, ok = m.Config.ManifestTemplates[planName]; !ok {
+		return bosh.BoshManifest{}, fmt.Errorf("Can't find plan template for name %s", planName)
+	}
+	_, err := tmpl.Parse(planTemplate)
 	if err != nil {
 		return bosh.BoshManifest{}, err
 	}
