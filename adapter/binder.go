@@ -3,6 +3,7 @@ package adapter
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"text/template"
 
 	"github.com/cppforlife/go-patch/patch"
@@ -15,11 +16,13 @@ import (
 
 type Binder struct {
 	Config         *config.Config
+	Logger         *log.Logger
 	manifestYaml   interface{}
 	deploymentYaml interface{}
 }
 
 func (b Binder) CreateBinding(bindingID string, deploymentTopology bosh.BoshVMs, manifest bosh.BoshManifest, requestParams serviceadapter.RequestParameters) (serviceadapter.Binding, error) {
+	b.Logger.Printf("Creating binding. id: %s", bindingID)
 	var err error
 	b.manifestYaml, err = b.convert(manifest)
 	if err != nil {
@@ -42,9 +45,11 @@ func (b Binder) CreateBinding(bindingID string, deploymentTopology bosh.BoshVMs,
 	if err != nil {
 		return serviceadapter.Binding{}, err
 	}
+	bindingStr := buf.String()
+	b.Logger.Printf("Binding: \n%s\n", bindingStr)
 
 	res := map[string]interface{}{}
-	err = yaml.Unmarshal([]byte(buf.String()), &res)
+	err = yaml.Unmarshal([]byte(bindingStr), &res)
 	if err != nil {
 		return serviceadapter.Binding{}, err
 	}

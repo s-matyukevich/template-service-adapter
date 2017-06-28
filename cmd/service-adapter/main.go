@@ -20,8 +20,8 @@ func main() {
 	if err != nil {
 		stderrLogger.Fatal("Error while parsing config:", err)
 	}
-	manifestGenerator := adapter.ManifestGenerator{Config: config}
-	binder := adapter.Binder{Config: config}
+	manifestGenerator := adapter.ManifestGenerator{Config: config, Logger: stderrLogger}
+	binder := adapter.Binder{Config: config, Logger: stderrLogger}
 	args = append([]string{args[0]}, args[3:]...)
 	serviceadapter.HandleCommandLineInvocation(args, manifestGenerator, binder, nil)
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"log"
 	"text/template"
 
 	"github.com/nu7hatch/gouuid"
@@ -17,6 +18,7 @@ import (
 
 type ManifestGenerator struct {
 	Config *config.Config
+	Logger *log.Logger
 }
 
 var GenPassword = func() (string, error) {
@@ -40,6 +42,7 @@ func (m ManifestGenerator) GenerateManifest(
 	} else {
 		return bosh.BoshManifest{}, errors.New("Plan don't have a name property.")
 	}
+	m.Logger.Printf("Generating manifest. plan: %s\n", planName)
 	tmpl := template.New("manifest-template")
 	stemcellAlias := "only-stemcell"
 	tmpl.Funcs(template.FuncMap{"genPassword": GenPassword})
@@ -86,8 +89,10 @@ func (m ManifestGenerator) GenerateManifest(
 		return bosh.BoshManifest{}, err
 	}
 	manifest := bosh.BoshManifest{}
+	manifestStr := b.String()
+	m.Logger.Printf("Manifest: \n%s\n", manifestStr)
 
-	err = yaml.Unmarshal([]byte(b.String()), &manifest)
+	err = yaml.Unmarshal([]byte(manifestStr), &manifest)
 	if err != nil {
 		return bosh.BoshManifest{}, err
 	}
