@@ -12,6 +12,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/s-matyukevich/template-service-adapter/config"
+	"github.com/s-matyukevich/template-service-adapter/utils"
 )
 
 type Binder struct {
@@ -40,8 +41,16 @@ func (b Binder) CreateBinding(bindingID string, deploymentTopology bosh.BoshVMs,
 	if err != nil {
 		return serviceadapter.Binding{}, err
 	}
+	params := map[string]interface{}{}
+	params["deployment"] = deploymentTopology
+	params["manifest"] = manifest
+	executionRes, err := utils.ExecuteScript(b.Config.PreBinding, params)
+	if err != nil {
+		return serviceadapter.Binding{}, err
+	}
+	params["generatedParams"] = executionRes
 	buf := &bytes.Buffer{}
-	err = tmpl.Execute(buf, nil)
+	err = tmpl.Execute(buf, params)
 	if err != nil {
 		return serviceadapter.Binding{}, err
 	}

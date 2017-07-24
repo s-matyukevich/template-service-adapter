@@ -14,6 +14,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/s-matyukevich/template-service-adapter/config"
+	"github.com/s-matyukevich/template-service-adapter/utils"
 )
 
 type ManifestGenerator struct {
@@ -89,10 +90,16 @@ func (m ManifestGenerator) GenerateManifest(
 	params["deployment"] = serviceDeployment
 	params["plan"] = plan
 	params["previousPlan"] = previousPlan
+	executionRes, err := utils.ExecuteScript(m.Config.PreManifestGeneration, params)
+	if err != nil {
+		return bosh.BoshManifest{}, err
+	}
+	params["generatedParams"] = executionRes
 	err = tmpl.Execute(b, params)
 	if err != nil {
 		return bosh.BoshManifest{}, err
 	}
+
 	manifest := bosh.BoshManifest{}
 	manifestStr := b.String()
 	m.Logger.Printf("Manifest: \n%s\n", manifestStr)
