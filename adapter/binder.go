@@ -43,9 +43,12 @@ func (b Binder) CreateBinding(bindingID string, deploymentTopology bosh.BoshVMs,
 	}
 	params := map[string]interface{}{}
 	params["deployment"] = deploymentTopology
+	for k, v := range manifest.Properties {
+		manifest.Properties[k] = b.conviertToJsonCompatibleStyle(v)
+	}
 	params["manifest"] = manifest
 	executionRes, stderr, err := utils.ExecuteScript(b.Config.PreBinding, params)
-	b.Logger.Printf("Pre binding sdcript stderr: \n%s\n", stderr)
+	b.Logger.Printf("Pre binding script stderr: \n%s\n", stderr)
 	if err != nil {
 		return serviceadapter.Binding{}, err
 	}
@@ -91,4 +94,25 @@ func (b Binder) convert(obj interface{}) (interface{}, error) {
 	var res interface{}
 	err = yaml.Unmarshal(doc, &res)
 	return res, err
+}
+
+func (b Binder) conviertToJsonCompatibleStyle(i interface{}) interface{} {
+	switch x := i.(type) {
+	case map[string]interface{}:
+		for k, v := range x {
+			x[k] = b.conviertToJsonCompatibleStyle(v)
+		}
+		return x
+	case map[interface{}]interface{}:
+		m2 := map[string]interface{}{}
+		for k, v := range x {
+			m2[k.(string)] = b.conviertToJsonCompatibleStyle(v)
+		}
+		return m2
+	case []interface{}:
+		for i, v := range x {
+			x[i] = b.conviertToJsonCompatibleStyle(v)
+		}
+	}
+	return i
 }
