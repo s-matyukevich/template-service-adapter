@@ -2,6 +2,7 @@ package adapter
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"text/template"
@@ -62,7 +63,7 @@ func (b Binder) CreateBinding(bindingID string, deploymentTopology bosh.BoshVMs,
 	b.Logger.Printf("Binding: \n%s\n", bindingStr)
 
 	res := map[string]interface{}{}
-	err = yaml.Unmarshal([]byte(bindingStr), &res)
+	err = json.Unmarshal([]byte(bindingStr), &res)
 	if err != nil {
 		return serviceadapter.Binding{}, err
 	}
