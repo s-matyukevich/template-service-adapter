@@ -90,7 +90,8 @@ func (m ManifestGenerator) GenerateManifest(
 	params["deployment"] = serviceDeployment
 	params["plan"] = plan
 	params["previousPlan"] = previousPlan
-	executionRes, err := utils.ExecuteScript(m.Config.PreManifestGeneration, params)
+	executionRes, stderr, err := utils.ExecuteScript(m.Config.PreManifestGeneration, params)
+	m.Logger.Printf("Pre manifest generation sdcript stderr: \n%s\n", stderr)
 	if err != nil {
 		return bosh.BoshManifest{}, err
 	}

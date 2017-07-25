@@ -44,7 +44,8 @@ func (b Binder) CreateBinding(bindingID string, deploymentTopology bosh.BoshVMs,
 	params := map[string]interface{}{}
 	params["deployment"] = deploymentTopology
 	params["manifest"] = manifest
-	executionRes, err := utils.ExecuteScript(b.Config.PreBinding, params)
+	executionRes, stderr, err := utils.ExecuteScript(b.Config.PreBinding, params)
+	b.Logger.Printf("Pre binding sdcript stderr: \n%s\n", stderr)
 	if err != nil {
 		return serviceadapter.Binding{}, err
 	}

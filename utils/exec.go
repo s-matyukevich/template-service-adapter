@@ -1,27 +1,34 @@
 package utils
 
 import (
+	"bytes"
 	"encoding/json"
 	"os/exec"
 )
 
-func ExecuteScript(script string, params interface{}) (interface{}, error) {
+func ExecuteScript(script string, params interface{}) (interface{}, string, error) {
 	if script == "" {
-		return "", nil
+		return nil, "", nil
 	}
 	serializedParams, err := json.Marshal(params)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	cmd := exec.Command(script, string(serializedParams))
-	output, err := cmd.Output()
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err = cmd.Run()
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
+	output := stdout.Bytes()
+	stderrOutput := string(stderr.Bytes())
 	if output != nil {
 		var res interface{}
 		err = json.Unmarshal(output, &res)
-		return res, err
+		return res, stderrOutput, err
 	}
-	return nil, nil
+	return nil, stderrOutput, nil
 }
