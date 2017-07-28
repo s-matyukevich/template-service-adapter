@@ -10,7 +10,6 @@ import (
 	"github.com/cppforlife/go-patch/patch"
 	"github.com/pivotal-cf/on-demand-services-sdk/bosh"
 	"github.com/pivotal-cf/on-demand-services-sdk/serviceadapter"
-	"gopkg.in/yaml.v2"
 
 	"github.com/s-matyukevich/template-service-adapter/config"
 	"github.com/s-matyukevich/template-service-adapter/utils"
@@ -26,11 +25,11 @@ type Binder struct {
 func (b Binder) CreateBinding(bindingID string, deploymentTopology bosh.BoshVMs, manifest bosh.BoshManifest, requestParams serviceadapter.RequestParameters) (serviceadapter.Binding, error) {
 	b.Logger.Printf("Creating binding. id: %s", bindingID)
 	var err error
-	b.manifestYaml, err = b.convert(manifest)
+	b.manifestYaml, err = utils.ConvertToYamlCompatibleObject(manifest)
 	if err != nil {
 		return serviceadapter.Binding{}, err
 	}
-	b.deploymentYaml, err = b.convert(deploymentTopology)
+	b.deploymentYaml, err = utils.ConvertToYamlCompatibleObject(deploymentTopology)
 	if err != nil {
 		return serviceadapter.Binding{}, err
 	}
@@ -44,9 +43,7 @@ func (b Binder) CreateBinding(bindingID string, deploymentTopology bosh.BoshVMs,
 	}
 	params := map[string]interface{}{}
 	params["deployment"] = deploymentTopology
-	for k, v := range manifest.Properties {
-		manifest.Properties[k] = b.conviertToJsonCompatibleStyle(v)
-	}
+	manifest.Properties = utils.ConvertToJsonCompatibleMap(manifest.Properties)
 	params["manifest"] = manifest
 	executionRes, stderr, err := utils.ExecuteScript(b.Config.PreBinding, params)
 	b.Logger.Printf("Pre binding script stderr: \n%s\n", stderr)
@@ -62,13 +59,19 @@ func (b Binder) CreateBinding(bindingID string, deploymentTopology bosh.BoshVMs,
 	bindingStr := buf.String()
 	b.Logger.Printf("Binding: \n%s\n", bindingStr)
 
-	res := map[string]interface{}{}
-	err = json.Unmarshal([]byte(bindingStr), &res)
+	binding := map[string]interface{}{}
+	err = json.Unmarshal([]byte(bindingStr), &binding)
+	if err != nil {
+		return serviceadapter.Binding{}, err
+	}
+	params["binding"] = binding
+	executionRes, stderr, err = utils.ExecuteScript(b.Config.PostBinding, params)
+	b.Logger.Printf("Post binding script stderr: \n%s\n", stderr)
 	if err != nil {
 		return serviceadapter.Binding{}, err
 	}
 	return serviceadapter.Binding{
-		Credentials: res,
+		Credentials: binding,
 	}, nil
 }
 
@@ -85,35 +88,4 @@ func (b Binder) getTemplateFunc(doc interface{}) func(string) (string, error) {
 		res, err := patch.FindOp{Path: p}.Apply(doc)
 		return fmt.Sprintf("%v", res), err
 	}
-}
-
-func (b Binder) convert(obj interface{}) (interface{}, error) {
-	doc, err := yaml.Marshal(obj)
-	if err != nil {
-		return nil, err
-	}
-	var res interface{}
-	err = yaml.Unmarshal(doc, &res)
-	return res, err
-}
-
-func (b Binder) conviertToJsonCompatibleStyle(i interface{}) interface{} {
-	switch x := i.(type) {
-	case map[string]interface{}:
-		for k, v := range x {
-			x[k] = b.conviertToJsonCompatibleStyle(v)
-		}
-		return x
-	case map[interface{}]interface{}:
-		m2 := map[string]interface{}{}
-		for k, v := range x {
-			m2[k.(string)] = b.conviertToJsonCompatibleStyle(v)
-		}
-		return m2
-	case []interface{}:
-		for i, v := range x {
-			x[i] = b.conviertToJsonCompatibleStyle(v)
-		}
-	}
-	return i
 }

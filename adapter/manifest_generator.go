@@ -109,7 +109,11 @@ func (m ManifestGenerator) GenerateManifest(
 	if err != nil {
 		return bosh.BoshManifest{}, err
 	}
-	return manifest, nil
+	manifest.Properties = utils.ConvertToJsonCompatibleMap(manifest.Properties)
+	params["manifest"] = manifest
+	executionRes, stderr, err = utils.ExecuteScript(m.Config.PostManifestGeneration, params)
+	m.Logger.Printf("Post manifest generation script stderr: \n%s\n", stderr)
+	return bosh.BoshManifest{}, err
 }
 
 func (m ManifestGenerator) printYamlFunc(blockName string, obj interface{}, indent string) func() (string, error) {
