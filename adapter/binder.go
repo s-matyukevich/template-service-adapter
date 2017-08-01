@@ -64,7 +64,7 @@ func (b Binder) CreateBinding(bindingID string, deploymentTopology bosh.BoshVMs,
 		return serviceadapter.Binding{}, err
 	}
 	params["binding"] = binding
-	executionRes, err = utils.ExecuteScript(b.Config.PostBinding, params, b.Logger)
+	_, err = utils.ExecuteScript(b.Config.PostBinding, params, b.Logger)
 	if err != nil {
 		return serviceadapter.Binding{}, err
 	}

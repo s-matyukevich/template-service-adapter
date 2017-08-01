@@ -110,7 +110,8 @@ func (m ManifestGenerator) GenerateManifest(
 	}
 	manifest.Properties = utils.ConvertToJsonCompatibleMap(manifest.Properties)
 	params["manifest"] = manifest
-	executionRes, err = utils.ExecuteScript(m.Config.PostManifestGeneration, params, m.Logger)
+	_, err = utils.ExecuteScript(m.Config.PostManifestGeneration, params, m.Logger)
+	m.Logger.Printf("Debug error: !%s!", err)
 	return bosh.BoshManifest{}, err
 }
 
