@@ -90,8 +90,7 @@ func (m ManifestGenerator) GenerateManifest(
 	params["deployment"] = serviceDeployment
 	params["plan"] = plan
 	params["previousPlan"] = previousPlan
-	executionRes, stderr, err := utils.ExecuteScript(m.Config.PreManifestGeneration, params)
-	m.Logger.Printf("Pre manifest generation script stderr: \n%s\n", stderr)
+	executionRes, err := utils.ExecuteScript(m.Config.PreManifestGeneration, params, m.Logger)
 	if err != nil {
 		return bosh.BoshManifest{}, err
 	}
@@ -111,8 +110,7 @@ func (m ManifestGenerator) GenerateManifest(
 	}
 	manifest.Properties = utils.ConvertToJsonCompatibleMap(manifest.Properties)
 	params["manifest"] = manifest
-	executionRes, stderr, err = utils.ExecuteScript(m.Config.PostManifestGeneration, params)
-	m.Logger.Printf("Post manifest generation script stderr: \n%s\n", stderr)
+	executionRes, err = utils.ExecuteScript(m.Config.PostManifestGeneration, params, m.Logger)
 	return bosh.BoshManifest{}, err
 }
 

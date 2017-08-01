@@ -3,16 +3,17 @@ package utils
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"os/exec"
 )
 
-func ExecuteScript(script string, params interface{}) (interface{}, string, error) {
+func ExecuteScript(script string, params interface{}, l *log.Logger) (interface{}, error) {
 	if script == "" {
-		return nil, "", nil
+		return nil, nil
 	}
 	serializedParams, err := json.Marshal(params)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 	cmd := exec.Command(script, string(serializedParams))
 	var stdout bytes.Buffer
@@ -21,14 +22,15 @@ func ExecuteScript(script string, params interface{}) (interface{}, string, erro
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 	output := stdout.Bytes()
 	stderrOutput := string(stderr.Bytes())
+	l.Printf("%s stderr: \n%s\n", script, stderrOutput)
 	if output != nil {
 		var res interface{}
 		err = json.Unmarshal(output, &res)
-		return res, stderrOutput, err
+		return res, err
 	}
-	return nil, stderrOutput, nil
+	return nil, nil
 }

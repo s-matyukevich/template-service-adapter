@@ -45,8 +45,7 @@ func (b Binder) CreateBinding(bindingID string, deploymentTopology bosh.BoshVMs,
 	params["deployment"] = deploymentTopology
 	manifest.Properties = utils.ConvertToJsonCompatibleMap(manifest.Properties)
 	params["manifest"] = manifest
-	executionRes, stderr, err := utils.ExecuteScript(b.Config.PreBinding, params)
-	b.Logger.Printf("Pre binding script stderr: \n%s\n", stderr)
+	executionRes, err := utils.ExecuteScript(b.Config.PreBinding, params, b.Logger)
 	if err != nil {
 		return serviceadapter.Binding{}, err
 	}
@@ -65,8 +64,7 @@ func (b Binder) CreateBinding(bindingID string, deploymentTopology bosh.BoshVMs,
 		return serviceadapter.Binding{}, err
 	}
 	params["binding"] = binding
-	executionRes, stderr, err = utils.ExecuteScript(b.Config.PostBinding, params)
-	b.Logger.Printf("Post binding script stderr: \n%s\n", stderr)
+	executionRes, err = utils.ExecuteScript(b.Config.PostBinding, params, b.Logger)
 	if err != nil {
 		return serviceadapter.Binding{}, err
 	}
