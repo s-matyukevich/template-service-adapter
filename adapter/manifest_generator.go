@@ -108,7 +108,7 @@ func (m ManifestGenerator) GenerateManifest(
 	if err != nil {
 		return bosh.BoshManifest{}, err
 	}
-	manifest.Properties = utils.ConvertToJsonCompatibleMap(manifest.Properties)
+	manifest = utils.MakeJsonCompatible(manifest)
 	params["manifest"] = manifest
 	_, err = utils.ExecuteScript(m.Config.PostManifestGeneration, params, m.Logger)
 	return manifest, err

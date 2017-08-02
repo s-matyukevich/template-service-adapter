@@ -1,6 +1,18 @@
 package utils
 
-func ConvertToJsonCompatibleMap(obj map[string]interface{}) map[string]interface{} {
+import (
+	"github.com/pivotal-cf/on-demand-services-sdk/bosh"
+)
+
+func MakeJsonCompatible(manifest bosh.BoshManifest) bosh.BoshManifest {
+	manifest.Properties = makeJsonCompatibleMap(manifest.Properties)
+	for _, group := range manifest.InstanceGroups {
+		group.Properties = makeJsonCompatibleMap(group.Properties)
+	}
+	return manifest
+}
+
+func makeJsonCompatibleMap(obj map[string]interface{}) map[string]interface{} {
 	for k, v := range obj {
 		obj[k] = convert(v)
 	}

@@ -43,7 +43,7 @@ func (b Binder) CreateBinding(bindingID string, deploymentTopology bosh.BoshVMs,
 	}
 	params := map[string]interface{}{}
 	params["deployment"] = deploymentTopology
-	manifest.Properties = utils.ConvertToJsonCompatibleMap(manifest.Properties)
+	manifest = utils.MakeJsonCompatible(manifest)
 	params["manifest"] = manifest
 	executionRes, err := utils.ExecuteScript(b.Config.PreBinding, params, b.Logger)
 	if err != nil {
