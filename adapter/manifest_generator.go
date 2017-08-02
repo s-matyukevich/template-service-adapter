@@ -110,8 +110,8 @@ func (m ManifestGenerator) GenerateManifest(
 	}
 	manifest.Properties = utils.ConvertToJsonCompatibleMap(manifest.Properties)
 	params["manifest"] = manifest
-	//_, err = utils.ExecuteScript(m.Config.PostManifestGeneration, params, m.Logger)
-	return bosh.BoshManifest{}, err
+	_, err = utils.ExecuteScript(m.Config.PostManifestGeneration, params, m.Logger)
+	return manifest, err
 }
 
 func (m ManifestGenerator) printYamlFunc(blockName string, obj interface{}, indent string) func() (string, error) {
