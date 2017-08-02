@@ -27,7 +27,7 @@ func ExecuteScript(script string, params interface{}, l *log.Logger) (interface{
 	output := stdout.Bytes()
 	stderrOutput := string(stderr.Bytes())
 	l.Printf("%s stderr: \n%s\n", script, stderrOutput)
-	if output != nil {
+	if output != nil && string(output) != "" {
 		var res interface{}
 		err = json.Unmarshal(output, &res)
 		return res, err
