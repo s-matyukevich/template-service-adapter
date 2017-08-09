@@ -10,6 +10,7 @@ func MakeJsonCompatible(manifest bosh.BoshManifest) bosh.BoshManifest {
 		group.Properties = makeJsonCompatibleMap(group.Properties)
 		for _, job := range group.Jobs {
 			job.Properties = makeJsonCompatibleMap(job.Properties)
+			job.Consumes = makeJsonCompatibleMap(job.Consumes)
 		}
 	}
 	return manifest
