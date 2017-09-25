@@ -58,7 +58,7 @@ func (b Binder) CreateBinding(bindingID string, deploymentTopology bosh.BoshVMs,
 	bindingStr := buf.String()
 	b.Logger.Printf("Binding: \n%s\n", bindingStr)
 
-	binding := map[string]interface{}{}
+	binding := serviceadapter.Binding{}
 	err = json.Unmarshal([]byte(bindingStr), &binding)
 	if err != nil {
 		return serviceadapter.Binding{}, err
@@ -68,9 +68,7 @@ func (b Binder) CreateBinding(bindingID string, deploymentTopology bosh.BoshVMs,
 	if err != nil {
 		return serviceadapter.Binding{}, err
 	}
-	return serviceadapter.Binding{
-		Credentials: binding,
-	}, nil
+	return binding, nil
 }
 
 func (b Binder) DeleteBinding(bindingID string, deploymentTopology bosh.BoshVMs, manifest bosh.BoshManifest, requestParams serviceadapter.RequestParameters) error {
